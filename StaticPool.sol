@@ -84,6 +84,8 @@ contract StaticPool is
 
     address[] private buyPath;
 
+    uint256 public powRadio;
+
     event Deposit(
         address indexed user,
         uint256 amount,
@@ -118,6 +120,7 @@ contract StaticPool is
         family = _family;
         pancakeRouter = _pancakeRouter;
         xRadio = 0.9e12;
+        powRadio = 1.02e12;
         IERC20Upgradeable(usdt).approve(pancakeRouter, type(uint256).max);
         IERC20Upgradeable(rewardToken).approve(
             pancakeRouter,
@@ -137,6 +140,16 @@ contract StaticPool is
     function setXRadio(uint256 radio) external onlyRole(MANAGER_ROLE) {
         require(radio <= 1e12, "StaticPool: Invalid Radio!");
         xRadio = radio;
+    }
+
+    /**
+     * @notice 设置算力膨胀指数
+     * @param radio 膨胀指数 $amount:szabo
+     */
+    function setPowRadio(uint256 radio) external onlyRole(MANAGER_ROLE) {
+        require(radio >= 1e12, "StaticPool: low Radio!");
+        require(radio <= 2e12, "StaticPool: big Radio!");
+        powRadio = radio;
     }
 
     /// @notice 分发奖励
@@ -167,7 +180,7 @@ contract StaticPool is
 
     function getPowerByUSDT(uint256 amount) public view returns (uint256) {
         // 幂运算
-        int128 float = ABDKMath64x64.divu(1.02e12, 1e12);
+        int128 float = ABDKMath64x64.divu(powRadio, 1e12);
         int128 pow = ABDKMath64x64.pow(float, IEpoch(epoch).getCurrentEpoch());
         return ABDKMath64x64.mulu(pow, amount);
     }

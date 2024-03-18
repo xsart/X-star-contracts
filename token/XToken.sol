@@ -45,7 +45,7 @@ contract XToken is ERC20, Ownable, ERC20Burnable {
         address _account,
         address _usdt,
         address _router
-    ) ERC20("Xswap Token", "X") {
+    ) ERC20("X Token", "X") {
         _mint(_account, 6060 * 10000 * 1e18);
 
         sellFee = 0.2e12;

@@ -35,14 +35,6 @@ contract Robot is Initializable, PermissionControl {
         receiptor = account;
     }
 
-    function takeUsdt(
-        address account,
-        uint256 amount
-    ) external onlyRole(MANAGER_ROLE) {
-        require(account != address(0), "not zero");
-        IERC20(usdt).transfer(account, amount);
-    }
-
     function addLiquidity() external {
         address[] memory sellPath = new address[](2);
         sellPath[0] = token;
@@ -72,5 +64,11 @@ contract Robot is Initializable, PermissionControl {
             address(0),
             block.timestamp
         );
+        if (IERC20(usdt).balanceOf(address(this)) > 0) {
+            IERC20(usdt).transfer(
+                receiptor,
+                IERC20(usdt).balanceOf(address(this))
+            );
+        }
     }
 }

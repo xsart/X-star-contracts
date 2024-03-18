@@ -9,8 +9,8 @@ import {ChainId} from "./swap-libs/ChainId.sol";
 contract SwapERC20 is ISwapERC20 {
     using SafeMath for uint;
 
-    string public constant override name = "CCSwap LP Token";
-    string public constant override symbol = "CCSwap LP Token";
+    string public constant override name = "XSwap LP Token";
+    string public constant override symbol = "XSwap LP Token";
     uint8 public constant override decimals = 18;
     uint public override totalSupply;
     mapping(address => uint) public override balanceOf;

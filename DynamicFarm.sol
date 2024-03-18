@@ -58,7 +58,7 @@ contract DynamicFarm is
     NodeRadio[] private hNradios;
 
     address private rewardToken;
-    mapping(address => UserInfo) private userInfoOf;
+    mapping(address => UserInfo) public userInfoOf;
 
     address private family;
     /// @notice 时间节点
@@ -297,24 +297,22 @@ contract DynamicFarm is
         UserInfo storage user = userInfoOf[cardAddr];
         if (currentEpoch > user.lastEpoch) {
             uint256 length = currentEpoch - user.lastEpoch;
-            length = length > 30 ? 30 : length;
+            length = length > 30 ? user.lastEpoch + 30 : currentEpoch;
             rewards = new uint256[](length);
             selfPower = new uint256[](length);
             totalPower = new uint256[](length);
             totalReward = new uint256[](length);
             for (uint i = user.lastEpoch; i < length; i++) {
-                if (shareRewardOfEpoch[user.lastEpoch + i].totalPower > 0) {
-                    rewards[i] =
-                        (user.powerT[user.lastEpoch + i] *
-                            shareRewardOfEpoch[user.lastEpoch + i]
-                                .totalReward) /
-                        shareRewardOfEpoch[user.lastEpoch + i].totalPower;
+                if (shareRewardOfEpoch[i].totalPower > 0) {
+                    rewards[i - user.lastEpoch] =
+                        (user.powerT[i] * shareRewardOfEpoch[i].totalReward) /
+                        shareRewardOfEpoch[i].totalPower;
                 }
 
-                selfPower[i] = user.powerT[user.lastEpoch + i];
-                totalPower[i] = shareRewardOfEpoch[user.lastEpoch + i]
+                selfPower[i - user.lastEpoch] = user.powerT[i];
+                totalPower[i - user.lastEpoch] = shareRewardOfEpoch[i]
                     .totalPower;
-                totalReward[i] = shareRewardOfEpoch[user.lastEpoch + i]
+                totalReward[i - user.lastEpoch] = shareRewardOfEpoch[i]
                     .totalReward;
             }
         }
@@ -344,29 +342,27 @@ contract DynamicFarm is
         UserInfo storage user = userInfoOf[cardAddr];
         if (currentEpoch > user.lastEpoch) {
             uint256 length = currentEpoch - user.lastEpoch;
-            length = length > 30 ? 30 : length;
+            length = length > 30 ? user.lastEpoch + 30 : currentEpoch;
             rewards = new uint256[](length);
             selfPower = new uint256[](length);
             totalPower = new uint256[](length);
             minPower = new uint256[](length);
             for (uint i = user.lastEpoch; i < length; i++) {
-                if (user.lastEpoch + i > 0) {
+                if (i > 0) {
                     minPower[i] =
-                        (nodeInfoOf[user.lastEpoch + i - 1].avePower *
-                            getRadio(lNradios, user.lastEpoch + i)) /
+                        (nodeInfoOf[i - 1].avePower * getRadio(lNradios, i)) /
                         1e12;
                     if (
-                        user.powerN[user.lastEpoch + i] > minPower[i] &&
-                        lNodeRewardOfEpoch[user.lastEpoch + i].totalPower > 0
+                        user.powerN[i] > minPower[i] &&
+                        lNodeRewardOfEpoch[i].totalPower > 0
                     ) {
-                        rewards[i] =
-                            (user.powerN[user.lastEpoch + i] *
-                                lNodeRewardOfEpoch[user.lastEpoch + i]
-                                    .totalReward) /
-                            lNodeRewardOfEpoch[user.lastEpoch + i].totalPower;
+                        rewards[i - user.lastEpoch] =
+                            (user.powerN[i] *
+                                lNodeRewardOfEpoch[i].totalReward) /
+                            lNodeRewardOfEpoch[i].totalPower;
                     }
-                    selfPower[i] = user.powerN[user.lastEpoch + i];
-                    totalPower[i] = lNodeRewardOfEpoch[user.lastEpoch + i]
+                    selfPower[i - user.lastEpoch] = user.powerN[i];
+                    totalPower[i - user.lastEpoch] = lNodeRewardOfEpoch[i]
                         .totalPower;
                 }
             }
@@ -397,29 +393,27 @@ contract DynamicFarm is
         UserInfo storage user = userInfoOf[cardAddr];
         if (currentEpoch > user.lastEpoch) {
             uint256 length = currentEpoch - user.lastEpoch;
-            length = length > 30 ? 30 : length;
+            length = length > 30 ? user.lastEpoch + 30 : currentEpoch;
             rewards = new uint256[](length);
             selfPower = new uint256[](length);
             totalPower = new uint256[](length);
             minPower = new uint256[](length);
             for (uint i = user.lastEpoch; i < length; i++) {
-                if (user.lastEpoch + i > 0) {
+                if (i > 0) {
                     minPower[i] =
-                        (nodeInfoOf[user.lastEpoch + i - 1].avePower *
-                            getRadio(hNradios, user.lastEpoch + i)) /
+                        (nodeInfoOf[i - 1].avePower * getRadio(hNradios, i)) /
                         1e12;
                     if (
-                        user.powerN[user.lastEpoch + i] > minPower[i] &&
-                        hNodeRewardOfEpoch[user.lastEpoch + i].totalPower > 0
+                        user.powerN[i] > minPower[i] &&
+                        hNodeRewardOfEpoch[i].totalPower > 0
                     ) {
-                        rewards[i] =
-                            (user.powerN[user.lastEpoch + i] *
-                                hNodeRewardOfEpoch[user.lastEpoch + i]
-                                    .totalReward) /
-                            hNodeRewardOfEpoch[user.lastEpoch + i].totalPower;
+                        rewards[i - user.lastEpoch] =
+                            (user.powerN[i] *
+                                hNodeRewardOfEpoch[i].totalReward) /
+                            hNodeRewardOfEpoch[i].totalPower;
                     }
-                    selfPower[i] = user.powerN[user.lastEpoch + i];
-                    totalPower[i] = hNodeRewardOfEpoch[user.lastEpoch + i]
+                    selfPower[i - user.lastEpoch] = user.powerN[i];
+                    totalPower[i - user.lastEpoch] = hNodeRewardOfEpoch[i]
                         .totalPower;
                 }
             }
@@ -599,5 +593,9 @@ contract DynamicFarm is
                 radio = data[i].radio;
             }
         }
+    }
+
+    function test() external {
+        // test
     }
 }
